@@ -1,4 +1,4 @@
-# bingzhe-web-os
+# kaiors
 
 ## Project setup
 ```
