@@ -107,7 +107,7 @@ export default {
   },
   footer: {
     slogan: 'Turn your home into something beautiful',
-    desc: 'LA (Ligne Atelier) is a design-led interior brand specializing in wall surfaces, soft furnishings, and bespoke furniture, delivering integrated solutions for residential, hospitality, and commercial projects worldwide.',
+    desc: 'KAIROS is a design-led FF&E and soft furnishing brand specializing in furniture, lighting, textiles, and bespoke interior solutions, delivering integrated services for residential, hospitality, and commercial projects worldwide.',
     office: 'Office',
     location: 'China—',
     links: 'Links',

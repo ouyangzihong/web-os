@@ -22,12 +22,12 @@
 
           <div class="text-box">
             <h2 class="card-title">{{ item.title }}</h2>
-            <p class="card-desc">{{ item.desc }}</p>
+            <!-- <p class="card-desc">{{ item.desc }}</p>
             <div class="card-meta">
               <span>{{ item.location }}</span>
               <span class="divider">|</span>
               <span>{{ item.type }}</span>
-            </div>
+            </div> -->
           </div>
         </div>
       </div>

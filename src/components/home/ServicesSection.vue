@@ -148,20 +148,29 @@ export default {
     height: 100%;
     object-fit: cover;
     display: block;
-    transition: transform 0.6s ease;
+    transition: transform 0.6s ease, filter 0.35s ease;
   }
 
   &:hover .service-img {
     transform: scale(1.04);
+    filter: brightness(0.58);
   }
 
   .img-overlay {
     position: absolute;
     inset: 0;
-    background: linear-gradient(to top, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0) 55%);
+    z-index: 1;
     display: flex;
-    align-items: flex-end;
+    align-items: center;
+    justify-content: center;
     padding: 24px 20px;
+    pointer-events: none;
+    background: transparent;
+    transition: background 0.35s ease;
+  }
+
+  &:hover .img-overlay {
+    background: rgba(0, 0, 0, 0.2);
   }
 
   .img-title {
@@ -171,7 +180,15 @@ export default {
     line-height: 1.35;
     letter-spacing: 1.5px;
     text-transform: uppercase;
+    text-align: center;
     margin: 0;
+    text-shadow: 0 1px 12px rgba(0, 0, 0, 0.45);
+    opacity: 0;
+    transition: opacity 0.35s ease;
+  }
+
+  &:hover .img-title {
+    opacity: 1;
   }
 }
 
@@ -237,7 +254,7 @@ export default {
   }
 
   .main-text {
-    font-size: 13px;
+    font-size: 16px;
     font-weight: 500;
     color: #222;
     letter-spacing: 0.5px;
@@ -269,6 +286,11 @@ export default {
 
   .service-desc {
     font-size: 11px;
+  }
+
+  .timeline-item .main-text {
+    font-size: 14px;
+    white-space: normal;
   }
 
   .timeline-row {

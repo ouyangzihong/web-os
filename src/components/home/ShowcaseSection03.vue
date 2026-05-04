@@ -76,9 +76,9 @@ export default {
   width: 100%;
   height: calc(100vh - 50px);
   display: flex;
-  gap: 20px;
+  gap: 36px;
   background-color: #fff;
-  padding: 30px;
+  padding: 44px 80px;
   box-sizing: border-box;
   overflow: hidden;
 }
@@ -135,7 +135,7 @@ export default {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 28px;
 
   .split-cell {
     flex: 1;
@@ -158,8 +158,8 @@ export default {
   .showcase-section-03 {
     flex-direction: column;
     height: auto;
-    padding: 6px;
-    gap: 6px;
+    padding: 14px 16px;
+    gap: 14px;
   }
 
   .col-main {

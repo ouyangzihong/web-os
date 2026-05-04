@@ -1,7 +1,11 @@
 <template>
   <footer class="footer-container">
     <div class="footer-top">
-      <h2 class="brand-name">LIGNE ATELIER</h2>
+      <img
+        :src="brandLogo"
+        alt="LIGNE ATELIER"
+        class="brand-logo"
+      />
       <p class="slogan">{{ $t('footer.slogan') }}</p>
     </div>
 
@@ -30,10 +34,10 @@
         <h3 class="col-title">{{ $t('footer.links') }}</h3>
         <ul>
           <li><router-link to="/">{{ $t('navbar.home') }}</router-link></li>
-          <li><a href="javascript:void(0)" class="disabled-link">{{ $t('navbar.about') }}</a></li>
-          <li><a href="javascript:void(0)" class="disabled-link">{{ $t('navbar.products') }}</a></li>
+          <li><router-link to="/about">{{ $t('navbar.about') }}</router-link></li>
+          <li><router-link to="/products">{{ $t('navbar.products') }}</router-link></li>
           <li><router-link to="/projects">{{ $t('navbar.projects') }}</router-link></li>
-          <li><a href="javascript:void(0)" class="disabled-link">{{ $t('navbar.industries') }}</a></li>
+          <li><router-link to="/industries">{{ $t('navbar.industries') }}</router-link></li>
           <li><router-link to="/contact">{{ $t('navbar.contact') }}</router-link></li>
         </ul>
       </div>
@@ -41,11 +45,38 @@
       <div class="col social-media">
         <h3 class="col-title">{{ $t('footer.socialTitle') }}</h3>
         <div class="social-icons">
-          <div class="icon-circle" @click="handleSocialClick('Facebook')">Fb</div>
-          <div class="icon-circle" @click="handleSocialClick('Pinterest')">Pt</div>
-          <div class="icon-circle" @click="handleSocialClick('Instagram')">Ins</div>
-          <div class="icon-circle" @click="handleSocialClick('Website')">Web</div>
-          <div class="icon-circle" @click="handleSocialClick('WeChat')">We</div>
+          <button
+            type="button"
+            class="social-icon-btn"
+            aria-label="Facebook"
+            @click="handleSocialClick('Facebook')"
+          >
+            <img :src="iconFacebook" alt="" />
+          </button>
+          <button
+            type="button"
+            class="social-icon-btn"
+            aria-label="Instagram"
+            @click="handleSocialClick('Instagram')"
+          >
+            <img :src="iconInstagram" alt="" />
+          </button>
+          <button
+            type="button"
+            class="social-icon-btn"
+            aria-label="RedBook"
+            @click="handleSocialClick('RedBook')"
+          >
+            <img :src="iconRedBook" alt="" />
+          </button>
+          <button
+            type="button"
+            class="social-icon-btn"
+            aria-label="WeChat"
+            @click="handleSocialClick('WeChat')"
+          >
+            <img :src="iconWeChat" alt="" />
+          </button>
         </div>
       </div>
     </div>
@@ -59,8 +90,23 @@
 </template>
 
 <script>
+import brandLogo from '@/assets/images/TheFooter/logo.webp';
+import iconFacebook from '@/assets/images/TheFooter/FaceBook.webp';
+import iconInstagram from '@/assets/images/TheFooter/Instagram.webp';
+import iconRedBook from '@/assets/images/TheFooter/RedBook.webp';
+import iconWeChat from '@/assets/images/TheFooter/WeChat.webp';
+
 export default {
   name: "TheFooter",
+  data() {
+    return {
+      brandLogo,
+      iconFacebook,
+      iconInstagram,
+      iconRedBook,
+      iconWeChat
+    };
+  },
   methods: {
     navigateToContact() {
       // 编程式导航跳转到 Contact 页面
@@ -99,11 +145,15 @@ export default {
     justify-content: space-between;
     align-items: center;
     
-    .brand-name {
-      font-size: 20px;
-      font-weight: 700;
-      letter-spacing: 1px;
-      text-transform: uppercase;
+    .brand-logo {
+      height: 32px;
+      width: auto;
+      max-width: min(280px, 55vw);
+      object-fit: contain;
+      object-position: left center;
+      display: block;
+      /* 黑字 logo 在深色底上显示为白色 */
+      filter: brightness(0) invert(1);
     }
     .slogan {
       font-size: 23px;
@@ -208,31 +258,39 @@ export default {
     .social-media {
       .social-icons {
         display: flex;
-        gap: 15px;
+        gap: 16px;
         flex-wrap: wrap;
+        align-items: center;
 
-        .icon-circle {
-          width: 36px;
-          height: 36px;
-          border: 1px solid rgba(255, 255, 255, 0.3);
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 10px;
+        .social-icon-btn {
+          margin: 0;
+          padding: 0;
+          border: none;
+          background: transparent;
           cursor: pointer;
-          transition: all 0.3s ease;
-          user-select: none;
+          line-height: 0;
+          border-radius: 50%;
+          transition: transform 0.25s ease, opacity 0.25s ease;
+
+          img {
+            width: 36px;
+            height: 36px;
+            object-fit: contain;
+            display: block;
+          }
 
           &:hover {
-            background-color: #ffffff;
-            color: #333333;
-            border-color: #ffffff;
-            transform: scale(1.1);
+            transform: scale(1.08);
+            opacity: 0.92;
           }
-          
+
           &:active {
-            transform: scale(0.95); // 点击时的微缩效果
+            transform: scale(0.96);
+          }
+
+          &:focus-visible {
+            outline: 2px solid rgba(255, 255, 255, 0.65);
+            outline-offset: 3px;
           }
         }
       }
@@ -256,6 +314,11 @@ export default {
       
       .slogan {
         font-size: 14px;
+      }
+
+      .brand-logo {
+        height: 26px;
+        max-width: 85vw;
       }
     }
 

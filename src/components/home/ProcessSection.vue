@@ -123,6 +123,10 @@ export default {
   text-align: center;
   opacity: 0;
 
+  &:nth-child(-n + 2) {
+    border-top: none;
+  }
+
   &:nth-child(odd) {
     border-right: 1px solid rgba(255, 255, 255, 0.25);
   }

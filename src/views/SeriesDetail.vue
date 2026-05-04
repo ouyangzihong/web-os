@@ -24,11 +24,11 @@
 
           <div class="info-wrapper">
             <h3 class="item-title">{{ item.title }}</h3>
-            <div class="item-meta">
+            <!-- <div class="item-meta">
               <span>{{ item.location }}</span>
               <span class="divider">|</span>
               <span>{{ item.type }}</span>
-            </div>
+            </div> -->
           </div>
         </div>
       </div>

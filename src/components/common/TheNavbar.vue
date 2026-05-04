@@ -8,7 +8,7 @@
     }"
   >
     <div class="logo-container" @click="handleNavClick('/')" style="cursor: pointer;">
-      <img src="@/assets/images/logo.webp" alt="PINGENE Logo" class="logo-img" />
+      <img src="@/assets/images/title-logo.png" alt="kairos Logo" class="logo-img" />
     </div>
 
     <div class="menu-items">
