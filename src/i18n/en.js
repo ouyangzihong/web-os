@@ -24,8 +24,8 @@ export default {
     stats: [
       { num: '150+', title: 'COMPLETED PROJECTS', desc: 'From private residences to public and commercial spaces.' },
       { num: '80%', title: 'CLIENT REFERRALS', desc: 'Built on long-term trust and collaboration.' },
-      { num: '20+', title: 'CORE EXPERTS', desc: 'Design, material, and technical specialists.' },
-      { num: '10+', title: 'YEARS OF EXPERIENCE', desc: 'Design-led integrated interior solutions.' }
+      { num: '10+', title: 'YEARS OF EXPERIENCE', desc: 'Design-led integrated interior solutions.' },
+      { num: '20+', title: 'CORE EXPERTS', desc: 'Design, material, and technical specialists.' }
     ],
     timeline: [
       { step: 'Design Development', sub: '' }, // 移除重复的副标题，保持简洁

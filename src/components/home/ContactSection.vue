@@ -84,7 +84,7 @@
 </template>
 
 <script>
-import { supabase } from '@/utils/supabase'
+import { submitContactMessage } from '@/api/contact'
 
 export default {
   name: 'ContactSection',
@@ -148,34 +148,22 @@ export default {
 
       this.isSubmitting = true;
       try {
-        const { error } = await supabase
-          .from('contact_messages') 
-          .insert([{ 
-            name: this.form.name,
-            email: this.form.email,
-            subject: this.form.subject,
-            message: this.form.message,
-            privacy_agreed: this.form.privacyAgreed
-          }])
+        await submitContactMessage({
+          name: this.form.name,
+          email: this.form.email,
+          subject: this.form.subject,
+          message: this.form.message,
+        });
 
-        if (error) throw error
-        
-        // 显示成功弹窗
-        this.submitStatus = { type: 'success', msg: this.$t('contact.form.success') }
-        this.form = { name: '', email: '', subject: '', message: '', privacyAgreed: false }
-        
-        // 3秒后自动消失
-        setTimeout(() => {
-          this.submitStatus = null;
-        }, 3000);
+        this.submitStatus = { type: 'success', msg: this.$t('contact.form.success') };
+        this.form = { name: '', email: '', subject: '', message: '', privacyAgreed: false };
 
-      } catch (error) {
-        console.error('Error submitting form:', error)
-        // 显示错误弹窗
-        this.submitStatus = { type: 'error', msg: this.$t('contact.form.error') }
-        setTimeout(() => {
-          this.submitStatus = null;
-        }, 3000);
+        setTimeout(() => { this.submitStatus = null; }, 3000);
+
+      } catch (err) {
+        console.error('[Contact] 提交失败:', err.message);
+        this.submitStatus = { type: 'error', msg: this.$t('contact.form.error') };
+        setTimeout(() => { this.submitStatus = null; }, 3000);
       } finally {
         this.isSubmitting = false;
       }
@@ -191,7 +179,11 @@ export default {
   width: 100%;
   height: 100vh;
   min-height: 100vh;
-  background-color: #3f3f3f; 
+  background-color: #3f3f3f;
+  background-image: url('~@/assets/images/home/Home007.webp');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
   display: flex;
   align-items: center;
   justify-content: center;

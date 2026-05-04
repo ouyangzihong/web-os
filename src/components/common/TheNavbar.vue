@@ -8,7 +8,7 @@
     }"
   >
     <div class="logo-container" @click="handleNavClick('/')" style="cursor: pointer;">
-      <img src="@/assets/images/logo.png" alt="PINGENE Logo" class="logo-img" />
+      <img src="@/assets/images/logo.webp" alt="PINGENE Logo" class="logo-img" />
     </div>
 
     <div class="menu-items">
@@ -178,7 +178,7 @@ export default {
       align-items: center; 
       cursor: pointer; 
       position: relative; // 关键：为下拉菜单提供定位基准
-      padding: 10px 0;    // 增加一点点击热区
+      padding: 10px 0 2px 0;    // 增加一点点击热区
       
       .menu-text { 
         font-size: 14px; 

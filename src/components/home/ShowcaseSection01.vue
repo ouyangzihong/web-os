@@ -1,8 +1,8 @@
 <template>
-  <section class="projects-section">
+  <section class="showcase-section-01">
     <!-- 第一列：大图 -->
     <div class="col col-main" ref="col0">
-      <img :src="images[0]" alt="project-01" class="col-img" />
+      <img :src="images[0]" alt="showcase-01" class="col-img" />
       <div class="col-overlay">
         <h3 class="overlay-title">US·North America</h3>
         <p class="overlay-desc">FF&amp;E and soft furnishing solutions for contemporary villas and residences, focusing on comfort, functionality, and clean modern aesthetics.</p>
@@ -12,20 +12,20 @@
     <!-- 第二列：上下两张 -->
     <div class="col col-split" ref="col1">
       <div class="split-cell">
-        <img :src="images[1]" alt="project-02" class="col-img" />
+        <img :src="images[1]" alt="showcase-02" class="col-img" />
       </div>
       <div class="split-cell">
-        <img :src="images[2]" alt="project-03" class="col-img" />
+        <img :src="images[2]" alt="showcase-03" class="col-img" />
       </div>
     </div>
 
     <!-- 第三列：上下两张 -->
     <div class="col col-split" ref="col2">
       <div class="split-cell">
-        <img :src="images[3]" alt="project-04" class="col-img" />
+        <img :src="images[3]" alt="showcase-04" class="col-img" />
       </div>
       <div class="split-cell">
-        <img :src="images[4]" alt="project-05" class="col-img" />
+        <img :src="images[4]" alt="showcase-05" class="col-img" />
       </div>
     </div>
   </section>
@@ -40,7 +40,7 @@ import img04 from '@/assets/images/home/Home004-04.webp';
 import img05 from '@/assets/images/home/Home004-05.webp';
 
 export default {
-  name: 'ProjectsSection',
+  name: 'ShowcaseSection01',
   props: { isActive: { type: Boolean, default: false } },
   data() {
     return {
@@ -62,12 +62,7 @@ export default {
   methods: {
     playEnterAnimation() {
       gsap.to([this.$refs.col0, this.$refs.col1, this.$refs.col2], {
-        y: 0,
-        opacity: 1,
-        duration: 1,
-        stagger: 0.15,
-        ease: 'power3.out',
-        delay: 0.2
+        y: 0, opacity: 1, duration: 1, stagger: 0.15, ease: 'power3.out', delay: 0.2
       });
     }
   }
@@ -77,7 +72,7 @@ export default {
 <style lang="scss" scoped>
 @import '@/assets/styles/_variables.scss';
 
-.projects-section {
+.showcase-section-01 {
   width: 100%;
   height: calc(100vh - 50px);
   display: flex;
@@ -88,7 +83,6 @@ export default {
   overflow: hidden;
 }
 
-/* 通用列 */
 .col {
   position: relative;
   overflow: hidden;
@@ -102,12 +96,9 @@ export default {
     transition: transform 0.7s ease;
   }
 
-  &:hover .col-img {
-    transform: scale(1.04);
-  }
+  &:hover .col-img { transform: scale(1.04); }
 }
 
-/* 第一列：占 45% 宽，带文字覆盖 */
 .col-main {
   flex: 0 0 45%;
 
@@ -137,11 +128,9 @@ export default {
     line-height: 1.65;
     margin: 0 30px 30px 0;
     font-weight: 300;
-    // max-width: 400px;
   }
 }
 
-/* 第二、三列：各占剩余宽度的一半，内部上下分割 */
 .col-split {
   flex: 1;
   display: flex;
@@ -161,15 +150,12 @@ export default {
       transition: transform 0.7s ease;
     }
 
-    &:hover .col-img {
-      transform: scale(1.04);
-    }
+    &:hover .col-img { transform: scale(1.04); }
   }
 }
 
-/* --- 移动端适配 --- */
 @media screen and (max-width: 768px) {
-  .projects-section {
+  .showcase-section-01 {
     flex-direction: column;
     height: auto;
     padding: 6px;
@@ -179,7 +165,6 @@ export default {
   .col-main {
     flex: 0 0 50vw;
     height: 50vw;
-
     .overlay-title { font-size: 16px; }
     .overlay-desc { font-size: 11px; }
   }
@@ -187,7 +172,6 @@ export default {
   .col-split {
     flex-direction: row;
     height: 40vw;
-
     .split-cell { flex: 1; }
   }
 }
