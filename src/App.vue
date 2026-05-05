@@ -15,6 +15,14 @@ export default {
       lenis: null
     };
   },
+  watch: {
+    $route() {
+      // 路由切换时用 Lenis 立即跳回顶部
+      if (this.lenis) {
+        this.lenis.scrollTo(0, { immediate: true });
+      }
+    }
+  },
   mounted() {
     this.lenis = new Lenis({
       duration: 1.4,

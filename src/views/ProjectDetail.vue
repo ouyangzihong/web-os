@@ -31,23 +31,14 @@
 
     <div class="content-container">
       <div class="gallery-grid">
-        <aside class="grid-col col-left sticky-col"
-        ref="leftCol" 
-        :style="{ top: leftStickyTop }"
-        >
-          <div class="content-wrapper">
-            <div v-for="(item, i) in currentProject.leftContent" :key="i" class="left-item">
-              <p v-if="item.type === 'text'" class="text-para" v-html="item.content"></p>
-              <!-- <div v-else-if="item.type === 'image'" class="img-box small-square">
-                <img :src="item.src" alt="Context" />
-                <span class="caption" v-if="item.caption">{{ item.caption }}</span>
-              </div> -->
-              <div v-else class="img-box detail-card">
-                <img :src="item.src" alt="Detail" loading="lazy" decoding="async" referrerpolicy="no-referrer" />
-                <div class="detail-info">
-                  <span class="img-name">{{ item.name }}</span>
-                  <span class="img-meta">{{ item.meta }}</span>
-                </div>
+        <aside class="grid-col col-left">
+          <div v-for="(item, i) in currentProject.leftContent" :key="i" class="left-item">
+            <p v-if="item.type === 'text'" class="text-para" v-html="item.content"></p>
+            <div v-else class="img-box detail-card">
+              <img :src="item.src" alt="Detail" loading="lazy" decoding="async" referrerpolicy="no-referrer" />
+              <div class="detail-info">
+                <span class="img-name">{{ item.name }}</span>
+                <span class="img-meta">{{ item.meta }}</span>
               </div>
             </div>
           </div>
@@ -150,7 +141,6 @@ export default {
       autoplayTimer: null,
       isResetting: false,
       isAnimating: false,
-      leftStickyTop: '0px',
       rightStickyTop: '0px',
       resizeObserver: null
     };
@@ -240,7 +230,6 @@ export default {
          this.resetCarouselPos();
       });
       
-      window.scrollTo(0, 0);
       this.$nextTick(() => {
         gsap.from('.hero-content-wrapper', {
           y: 50, opacity: 0, duration: 1.2, ease: 'power3.out', delay: 0.2
@@ -375,38 +364,20 @@ export default {
         this.calculateStickyPos();
       });
 
-      // 开始观察左右侧边栏
-      if (this.$refs.leftCol) this.resizeObserver.observe(this.$refs.leftCol);
+      // 只观察右侧边栏（左侧文字已独立 sticky，无需动态计算）
       if (this.$refs.rightCol) this.resizeObserver.observe(this.$refs.rightCol);
       
       // 立即计算一次
       this.calculateStickyPos();
     },
 
-    // 【新增】核心计算逻辑
     calculateStickyPos() {
       const windowHeight = window.innerHeight;
-      const bottomMargin = 50; // 你希望侧边栏距离底部的留白
-      const navHeight = 80;    // 顶部导航栏的大致高度（防止太高遮挡）
+      const bottomMargin = 50;
 
-      // --- 计算左侧 ---
-      if (this.$refs.leftCol) {
-        const height = this.$refs.leftCol.offsetHeight;
-        // 核心公式：top = 屏幕高度 - 元素高度 - 底部留白
-        let top = windowHeight - height - bottomMargin;
-        
-        // 边界检查：如果侧边栏非常高（超过屏幕），则让它吸顶（或者你也可以让它吸底，看需求）
-        // 这里为了保证“底部固定”的体验，允许 top 为负数（这样就可以滚动到底部看全内容）
-        // 但不能让 top 太大导致它飞出屏幕下方，虽然逻辑上不太可能。
-        
-        // 只有当元素比屏幕矮时，这个公式才会产生较大的正数 top，从而实现“沉在底部”的效果。
-        this.leftStickyTop = `${top}px`;
-      }
-
-      // --- 计算右侧 ---
       if (this.$refs.rightCol) {
         const height = this.$refs.rightCol.offsetHeight;
-        let top = windowHeight - height - bottomMargin;
+        const top = windowHeight - height - bottomMargin;
         this.rightStickyTop = `${top}px`;
       }
     },
@@ -564,25 +535,27 @@ export default {
 
 .gallery-grid {
   display: grid;
-  // 左右固定 240px (比之前的 280/260 更窄)，中间自适应
   grid-template-columns: 260px 1fr 260px; 
   gap: 60px;
   align-items: start;
 }
 
+// CSS Grid sticky 侧栏的标准写法：
+// 父级 align-items: start，子级 position: sticky + top 值
+.col-left {
+  position: sticky;
+  top: 90px;
+  height: fit-content;
+}
+
 .sticky-col {
   position: sticky;
-  // 这里不再写固定的 top，而是通过 :style 动态绑定
-  // 也不需要 bottom
   height: fit-content;
-  // 移除 transition，防止计算时的抖动
-  transition: none; 
 }
 
 .grid-col {
   display: flex;
   flex-direction: column;
-//   gap: 40px;
 }
 
 .img-box {
@@ -594,7 +567,7 @@ export default {
 .text-para {
   font-size: 15px;
   line-height: 1.8;
-  color: #333; // 正文还是深色，因为背景是白色
+  color: #333;
   margin-bottom: 10px;
 }
 
@@ -746,8 +719,7 @@ export default {
     grid-template-columns: 1fr; 
     gap: 40px;
   }
-  // 移动端通常取消 sticky，因为高度不够
-  .sticky-col { 
+  .sticky-col, .col-left { 
     position: static; 
   }
   .col-right { display: flex; order: 3; }

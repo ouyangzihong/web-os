@@ -67,7 +67,7 @@ const routes = [
 ]
 
 const router = new VueRouter({
-  mode: 'hash',
+  mode: 'history',
   base: process.env.BASE_URL,
   routes,
   // 切换路由时，自动滚回到顶部
