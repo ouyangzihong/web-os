@@ -3,7 +3,9 @@
     <TheNavbar :is-visible="true" class="force-light-nav" />
 
     <div class="projects-container">
-      <div class="grid-wrapper">
+      <div v-if="loading" class="loading-state">Loading...</div>
+      <div v-else-if="error" class="error-state">{{ error }}</div>
+      <div v-else class="grid-wrapper">
         <div 
           v-for="(project, index) in projects" 
           :key="project.id" 
@@ -12,7 +14,7 @@
           @click="goToDetail(project.id)"
         >
           <div class="image-wrapper">
-            <img :src="project.coverImage" class="real-img" />
+            <img :src="project.coverImage" class="real-img" loading="lazy" decoding="async" referrerpolicy="no-referrer" />
             <div class="overlay"></div>
           </div>
           
@@ -36,62 +38,83 @@
 import TheNavbar from '@/components/common/TheNavbar.vue';
 import TheFooter from '@/components/common/TheFooter.vue';
 import gsap from 'gsap';
-import { projectsData } from '@/data/projects.js';
+import { fetchProjects } from '@/api/projects.js';
 
 export default {
   name: 'ProjectsView',
   components: { TheNavbar, TheFooter },
+  data() {
+    return {
+      allProjects: [],
+      loading: false,
+      error: null,
+    };
+  },
   computed: {
-// 构造显示用的列表数据，根据当前语言自动切换
     projects() {
-      const locale = this.$i18n.locale; // 获取当前语言 'zh' 或 'en'
-      
-      return projectsData.map(item => {
-        // 取出对应语言的数据包
-        const content = item[locale]; 
+      const locale = this.$i18n.locale;
+      return this.allProjects.map(item => {
+        const content = item[locale];
         return {
           id: item.id,
-          coverImage: item.coverImage, // 公共图片
-          ...content // 展开标题、描述等
+          coverImage: item.coverImage,
+          ...content
         };
       });
     }
   },
-//   data() {
-//     return {
-//       // 2. 赋值给本地变量
-//       projects: projectsData
-//     };
-//   },
+  watch: {
+    projects(val) {
+      if (val.length > 0) {
+        this.$nextTick(() => {
+          gsap.from('.project-card', {
+            y: 100,
+            opacity: 0,
+            duration: 1,
+            stagger: 0.1,
+            ease: 'power3.out',
+            delay: 0.1
+          });
+        });
+      }
+    }
+  },
   methods: {
-    // 判断是否是大图模式（每三个里的第三个，索引为 2, 5, 8...）
     isWide(index) {
       return (index + 1) % 3 === 0;
     },
     goToDetail(id) {
-        this.$router.push({ name: 'ProjectDetail', params: { id: id } });
+      this.$router.push({ name: 'ProjectDetail', params: { id: id } });
     }
   },
-  mounted() {
-    // GSAP 入场动画
-    // 让卡片从下往上浮动出现，带有交错效果
-    gsap.from(this.$refs.projectCards, {
-      y: 100,
-      opacity: 0,
-      duration: 1,
-      stagger: 0.2, // 每个卡片间隔 0.2秒
-      ease: 'power3.out',
-      delay: 0.2
-    });
+  async created() {
+    this.loading = true;
+    try {
+      this.allProjects = await fetchProjects();
+    } catch (e) {
+      this.error = e.message;
+      console.error('[Projects] 获取项目列表失败:', e);
+    } finally {
+      this.loading = false;
+    }
   }
 };
 </script>
 
 <style lang="scss" scoped>
 .projects-page {
-  background-color: #ffffff; // 页面白底
+  background-color: #ffffff;
   min-height: 100vh;
-  padding-top: 120px; // 给固定的 Navbar 留出空间
+  padding-top: 120px;
+}
+
+.loading-state,
+.error-state {
+  text-align: center;
+  padding: 100px 0;
+  font-size: 14px;
+  color: #999;
+  letter-spacing: 1px;
 }
 
 // 强制导航栏在白底页面上的样式 (覆盖 Navbar 默认透明样式)

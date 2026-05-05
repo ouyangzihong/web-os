@@ -1,5 +1,8 @@
-<template>
-  <div class="project-detail-page" v-if="currentProject">
+﻿<template>
+  <div>
+  <div v-if="loading" class="page-loading">Loading...</div>
+  <div v-else-if="error" class="page-error">{{ error }}</div>
+  <div class="project-detail-page" v-else-if="currentProject">
     <TheNavbar :is-visible="true" class="fixed-top-nav" />
 
     <header class="hero-section" :style="heroStyle">
@@ -40,7 +43,7 @@
                 <span class="caption" v-if="item.caption">{{ item.caption }}</span>
               </div> -->
               <div v-else class="img-box detail-card">
-                <img :src="item.src" alt="Detail" />
+                <img :src="item.src" alt="Detail" loading="lazy" decoding="async" referrerpolicy="no-referrer" />
                 <div class="detail-info">
                   <span class="img-name">{{ item.name }}</span>
                   <span class="img-meta">{{ item.meta }}</span>
@@ -56,7 +59,7 @@
             :key="`m-${idx}`" 
             class="img-box portrait-large"
           >
-            <img :src="img.src" alt="Main View" />
+            <img :src="img.src" alt="Main View" loading="lazy" decoding="async" referrerpolicy="no-referrer" />
           </div>
         </main>
 
@@ -68,7 +71,7 @@
             <div v-for="(img, idx) in currentProject.rightImages" :key="`r-${idx}`">
               <div v-if="img.spacer" :style="{ height: img.height }"></div>
               <div v-else class="img-box detail-card">
-                <img :src="img.src" alt="Detail" />
+                <img :src="img.src" alt="Detail" loading="lazy" decoding="async" />
                 <div class="detail-info">
                   <span class="img-name">{{ img.name }}</span>
                   <span class="img-meta">{{ img.meta }}</span>
@@ -104,7 +107,7 @@
                 @click="goToDetail(p.id)"
             >
                 <div class="slide-img-wrapper">
-                <img :src="p.coverImage" />
+                <img :src="p.coverImage" loading="lazy" decoding="async" referrerpolicy="no-referrer" />
                 <div class="hover-overlay">
                     <span>VIEW</span>
                 </div>
@@ -124,12 +127,13 @@
 
     <TheFooter />
   </div>
+  </div>
 </template>
 
 <script>
 import TheNavbar from '@/components/common/TheNavbar.vue';
 import TheFooter from '@/components/common/TheFooter.vue';
-import { projectsData } from '@/data/projects.js';
+import { fetchProjects } from '@/api/projects.js';
 import gsap from 'gsap';
 
 export default {
@@ -137,15 +141,18 @@ export default {
   components: { TheNavbar, TheFooter },
   data() {
     return {
+      allProjects: [],
       rawProject: null,
+      loading: false,
+      error: null,
       slideIndex: 0,
       itemsPerSlide: 3,
-      autoplayTimer: null, // 新增：定时器变量
-      isResetting: false, // 【新增】用于标记是否正在进行“瞬间重置”
-      isAnimating: false,  // 【新增】防止快速点击导致的动画冲突
+      autoplayTimer: null,
+      isResetting: false,
+      isAnimating: false,
       leftStickyTop: '0px',
       rightStickyTop: '0px',
-      resizeObserver: null // 保存观察者实例
+      resizeObserver: null
     };
   },
   computed: {
@@ -165,15 +172,20 @@ export default {
       const imgUrl = this.currentProject.coverImage;
       
       return {
-        // 使用 linear-gradient 添加 50% 透明度的黑色遮罩，防止背景太亮导致文字看不清
-        // backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(${imgUrl})`
-        backgroundImage: `url(${imgUrl})`
+        // 自上而下渐暗：底部内容为 flex-end，加重下半区遮罩以突出标题与介绍
+        backgroundImage: `linear-gradient(
+          to bottom,
+          rgba(0, 0, 0, 0.26) 0%,
+          rgba(0, 0, 0, 0.36) 40%,
+          rgba(0, 0, 0, 0.5) 72%,
+          rgba(0, 0, 0, 0.5) 100%
+        ), url(${imgUrl})`
       };
     },
     // 【新增】获取“其他项目”列表（过滤掉当前项目）
     otherProjects() {
       if (!this.rawProject) return [];
-      return projectsData.filter(p => p.id !== this.rawProject.id && p.isSelected);
+      return this.allProjects.filter(p => p.id !== this.rawProject.id && p.isSelected);
     },
     // 【修改】动态控制过渡效果
     trackStyle() {
@@ -202,18 +214,27 @@ export default {
     // 【新增】监听路由变化：从 项目A 跳到 项目B 时需要重新加载数据
     '$route.params.id': {
       immediate: true,
-      handler(newId) {
+      async handler(newId) {
+        await this.ensureProjectsLoaded();
         this.loadProject(newId);
       }
     }
   },
   methods: {
-    loadProject(id) {
-      // 每次加载新项目，重置状态
-      this.rawProject = projectsData.find(p => p.id === id);
-      if (!this.rawProject && projectsData.length > 0) {
-        this.rawProject = projectsData[0];
+    async ensureProjectsLoaded() {
+      if (this.allProjects.length > 0) return;
+      this.loading = true;
+      try {
+        this.allProjects = await fetchProjects();
+      } catch (e) {
+        this.error = e.message;
+        console.error('[ProjectDetail] Failed to fetch projects:', e);
+      } finally {
+        this.loading = false;
       }
+    },
+    loadProject(id) {
+      this.rawProject = this.allProjects.find(p => p.id === id) || this.allProjects[0] || null;
       // 【修改】重置时，也要重置到 itemsPerSlide，而不是 0
       this.$nextTick(() => {
          this.resetCarouselPos();
@@ -420,7 +441,17 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-// 基础设置
+.page-loading,
+.page-error {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: #999;
+  letter-spacing: 1px;
+}
+
 .project-detail-page {
   background-color: #ffffff;
   color: #1a1a1a;

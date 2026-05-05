@@ -126,8 +126,7 @@ function buildLangBlock(translation, leftImages, middleImages, rightImages) {
     leftContent.push({ type: 'text', content: t.project_desc })
   }
 
-  // 左侧产品/氛围图（图片数据与语言无关，中英共用同一组图）
-  leftContent.push(...transformImageList(leftImages, { width: 800, quality: 85 }))
+  leftContent.push(...transformImageList(leftImages))
 
   return {
     title: t.project_title || '',
@@ -136,10 +135,10 @@ function buildLangBlock(translation, leftImages, middleImages, rightImages) {
     location: t.project_location || '',
     type: t.project_type || '',
     leftContent,
-    mainImages: transformImageList(middleImages, { width: 1600, quality: 85 }),
+    mainImages: transformImageList(middleImages),
     rightImages: [
-      { spacer: true, height: '0px' }, // 保持与原 projects.js 一致的错位占位符
-      ...transformImageList(rightImages, { width: 800, quality: 85 }),
+      { spacer: true, height: '0px' },
+      ...transformImageList(rightImages),
     ],
   }
 }
@@ -153,8 +152,7 @@ function buildLangBlock(translation, leftImages, middleImages, rightImages) {
 function transformProject(raw) {
   const translationMap = buildTranslationMap(raw.project_info)
 
-  // 封面图使用较大尺寸，兼顾列表页缩略图与 Retina 屏显示
-  const coverImage = getAssetUrl(raw.cover_image, { width: 1200, quality: 85 })
+  const coverImage = getAssetUrl(raw.cover_image)
 
   return {
     id: String(raw.id),             // 转为字符串，与原路由 ID 模式兼容
