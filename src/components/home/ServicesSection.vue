@@ -194,7 +194,7 @@ export default {
 
 .service-desc {
   margin: 14px 0 0;
-  font-size: 12px;
+  font-size: 15px;
   color: #555;
   line-height: 1.65;
   text-align: center;

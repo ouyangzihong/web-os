@@ -24,9 +24,10 @@
       <div class="col office-info">
         <h3 class="col-title">{{ $t('footer.office') }}</h3>
         <div class="info-list">
-          <p>{{ $t('footer.location') }}</p>
-          <p class="placeholder">xxxxxx@xxx.com</p>
-          <p class="placeholder">+86 000 0000 0000</p>
+          <!-- <p>{{ $t('footer.location') }}</p> -->
+          <p>Room 1202, Jinhai Creative Center, Foshan, Guangdong, China</p>
+          <p class="placeholder">cyc183545@gmail.com</p>
+          <p class="placeholder">+86 132 4621 0619</p>
         </div>
       </div>
 

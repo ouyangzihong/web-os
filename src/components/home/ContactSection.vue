@@ -208,7 +208,7 @@ export default {
   display: flex;
   justify-content: flex-end; /* 靠右对齐 */
   align-items: center; 
-  padding-right: 10%; /* 右侧间距 */
+  padding-right: 5%; /* 右侧间距 */
 }
 
 .form-section {

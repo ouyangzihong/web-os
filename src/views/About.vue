@@ -21,10 +21,10 @@
         </div>
         <div class="brand-hero-image">
           <img src="@/assets/images/AboutUs/1-01.webp" alt="KAIROS Interior" />
-          <div class="brand-hero-overlay">
+          <!-- <div class="brand-hero-overlay">
             <span class="brand-hero-sub">Beauty of Integrated Living</span>
             <span class="brand-hero-name">KAIROS</span>
-          </div>
+          </div> -->
         </div>
       </section>
 

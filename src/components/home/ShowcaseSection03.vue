@@ -4,8 +4,8 @@
     <div class="col col-main" ref="col0">
       <img :src="images[0]" alt="showcase-03-01" class="col-img" />
       <div class="col-overlay">
-        <h3 class="overlay-title">SG·Southeast Asia</h3>
-        <p class="overlay-desc">FF&amp;E and soft furnishing solutions for contemporary villas and residences, focusing on comfort, functionality, and clean modern aesthetics.</p>
+        <h3 class="overlay-title">SA·Middle East</h3>
+        <p class="overlay-desc">FF&E and soft furnishing solutions for contemporary villas and residences, focusing on comfort, functionality, and clean modern aesthetics.</p>
       </div>
     </div>
 

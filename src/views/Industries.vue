@@ -28,7 +28,7 @@
           </div>
 
           <div class="cta-container fade-item">
-            <a @click.prevent="handleCtaClick(item.link)" class="cta-link">
+            <a @click.prevent="handleCtaClick" class="cta-link">
               <span class="cta-text">{{ $t(`industries.${item.key}.cta`) }}</span>
               <span class="cta-arrow">→</span>
             </a>
@@ -80,12 +80,12 @@ export default {
           align: 'left',
           link: '/projects?filter=commercial'
         },
-        { 
-          key: 'office', 
-          image: imgOffice, 
-          align: 'right',
-          link: '/projects?filter=office'
-        }
+        // { 
+        //   key: 'office', 
+        //   image: imgOffice, 
+        //   align: 'right',
+        //   link: '/projects?filter=office'
+        // }
       ]
     }
   },
@@ -118,8 +118,8 @@ export default {
         this.observer.observe(section);
       });
     },
-    handleCtaClick(path) {
-      this.$router.push(path);
+    handleCtaClick() {
+      this.$router.push({ name: 'Contact' });
     }
   }
 }

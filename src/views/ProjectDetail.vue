@@ -35,7 +35,7 @@
           <div v-for="(item, i) in currentProject.leftContent" :key="i" class="left-item">
             <p v-if="item.type === 'text'" class="text-para" v-html="item.content"></p>
             <div v-else class="img-box detail-card">
-              <img :src="item.src" alt="Detail" loading="lazy" decoding="async" referrerpolicy="no-referrer" />
+              <img v-lazy="item.src" alt="Detail" decoding="async" referrerpolicy="no-referrer" />
               <div class="detail-info">
                 <span class="img-name">{{ item.name }}</span>
                 <span class="img-meta">{{ item.meta }}</span>
@@ -50,7 +50,7 @@
             :key="`m-${idx}`" 
             class="img-box portrait-large"
           >
-            <img :src="img.src" alt="Main View" loading="lazy" decoding="async" referrerpolicy="no-referrer" />
+            <img v-lazy="img.src" alt="Main View" decoding="async" referrerpolicy="no-referrer" />
           </div>
         </main>
 
@@ -62,7 +62,7 @@
             <div v-for="(img, idx) in currentProject.rightImages" :key="`r-${idx}`">
               <div v-if="img.spacer" :style="{ height: img.height }"></div>
               <div v-else class="img-box detail-card">
-                <img :src="img.src" alt="Detail" loading="lazy" decoding="async" />
+                <img v-lazy="img.src" alt="Detail" decoding="async" />
                 <div class="detail-info">
                   <span class="img-name">{{ img.name }}</span>
                   <span class="img-meta">{{ img.meta }}</span>
@@ -98,7 +98,7 @@
                 @click="goToDetail(p.id)"
             >
                 <div class="slide-img-wrapper">
-                <img :src="p.coverImage" loading="lazy" decoding="async" referrerpolicy="no-referrer" />
+                <img v-lazy="p.coverImage" decoding="async" referrerpolicy="no-referrer" />
                 <div class="hover-overlay">
                     <span>VIEW</span>
                 </div>
@@ -127,9 +127,46 @@ import TheFooter from '@/components/common/TheFooter.vue';
 import { fetchProjects } from '@/api/projects.js';
 import gsap from 'gsap';
 
+function createLazyObserver(el, src) {
+  if (el._lazyObserver) {
+    el._lazyObserver.disconnect();
+  }
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          el.src = src;
+          observer.unobserve(el);
+        }
+      });
+    },
+    { rootMargin: '300px 0px', threshold: 0 }
+  );
+  observer.observe(el);
+  el._lazyObserver = observer;
+}
+
 export default {
   name: 'ProjectDetail',
   components: { TheNavbar, TheFooter },
+  directives: {
+    lazy: {
+      inserted(el, binding) {
+        createLazyObserver(el, binding.value);
+      },
+      update(el, binding) {
+        if (binding.value !== binding.oldValue) {
+          el.src = '';
+          createLazyObserver(el, binding.value);
+        }
+      },
+      unbind(el) {
+        if (el._lazyObserver) {
+          el._lazyObserver.disconnect();
+        }
+      }
+    }
+  },
   data() {
     return {
       allProjects: [],
