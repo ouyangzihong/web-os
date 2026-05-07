@@ -1,13 +1,16 @@
 <template>
-  <div class="product-detail-page" v-if="product">
+  <div class="product-detail-page">
     <TheNavbar :is-visible="true" class="force-light-nav" />
+    <div v-if="loading" class="loading-state">Loading...</div>
+    <div v-else-if="error" class="error-state">{{ error }}</div>
+    <template v-else-if="product">
 
     <div class="hero-section">
       <div class="hero-slider">
         <div class="slider-window">
           <div class="slider-track" :style="heroTrackStyle">
              <div class="slide-item"><img :src="heroLoopList[0]" /></div>
-             <div class="slide-item" v-for="(img, i) in product.gallery" :key="`real-${i}`">
+             <div class="slide-item" v-for="(img, i) in gallery" :key="`real-${i}`">
                <img :src="img" />
              </div>
              <div class="slide-item"><img :src="heroLoopList[heroLoopList.length-1]" /></div>
@@ -22,7 +25,8 @@
         <div class="info-content">
           <h2 class="collection-name">{{ currentSeriesName }}</h2>
           <h1 class="product-title">{{ productTitle }}</h1>
-          <p class="price-placeholder">XXX XXX</p> <div class="desc-text">{{ productDesc }}</div>
+          <!-- <p class="price-placeholder">XXX XXX</p>  -->
+          <div class="desc-text">{{ productDesc }}</div>
         </div>
       </div>
     </div>
@@ -39,7 +43,7 @@
 
       <div class="variant-thumbs">
         <div 
-          v-for="(v, idx) in product.variants" 
+          v-for="(v, idx) in variantItems" 
           :key="idx"
           class="thumb-item"
           :class="{ active: currentVariantIndex === idx }"
@@ -58,7 +62,7 @@
         <div class="slider-window">
           <div class="slider-track" :style="appTrackStyle">
             <div class="slide-item app-slide"><img :src="appLoopList[0]" /></div>
-            <div class="slide-item app-slide" v-for="(img, i) in product.applications" :key="`app-${i}`">
+            <div class="slide-item app-slide" v-for="(img, i) in appImages" :key="`app-${i}`">
               <img :src="img" />
               <div class="app-caption">Product images can be illustration references</div>
             </div>
@@ -75,7 +79,7 @@
       </div>
     </div>
 
-    <div class="section-container specs-section">
+    <!-- <div class="section-container specs-section">
       <h3 class="section-title">Specifications</h3>
       <div class="specs-table">
         <div class="spec-row">
@@ -99,7 +103,7 @@
           <span class="value">{{ getSpec('patternRepeat') }}</span>
         </div>
       </div>
-    </div>
+    </div> -->
 
     <div class="section-container other-patterns">
       <h3 class="section-title">Other patterns in this collection</h3>
@@ -130,6 +134,7 @@
       </div>
     </div>
 
+    </template>
     <TheFooter />
   </div>
 </template>
@@ -137,7 +142,7 @@
 <script>
 import TheNavbar from '@/components/common/TheNavbar.vue';
 import TheFooter from '@/components/common/TheFooter.vue';
-import { productsData } from '@/data/products.js';
+import { fetchProductById, fetchProductSeriesById, fetchProductsBySeriesId } from '@/api/products';
 
 export default {
   name: 'ProductDetail',
@@ -147,9 +152,11 @@ export default {
     return {
       product: null,
       seriesData: null,
-      
+      loading: false,
+      error: null,
+
       // Hero Slider State
-      heroIndex: 1, // 初始指向真实第1张 (索引1，因为0是克隆)
+      heroIndex: 1,
       isHeroAnimating: false,
       isHeroResetting: false,
 
@@ -162,8 +169,8 @@ export default {
       isAppResetting: false,
 
       // Bottom Slider State
-      bottomItemsRaw: [], // 随机选出的5个
-      bottomIndex: 3, // 初始位置 = itemsPerSlide (3)
+      bottomItemsRaw: [],
+      bottomIndex: 3,
       itemsPerSlide: 3,
       isBottomAnimating: false,
       isBottomResetting: false,
@@ -172,40 +179,52 @@ export default {
   },
   computed: {
     locale() { return this.$i18n.locale; },
-    
-    // 判断是否为 A/B/C 系列 (Variant Template)
+
+    // 地毯/墙布类型展示色彩变体，其余展示应用场景图
     isVariantTemplate() {
-      return this.seriesData && this.seriesData.templateType === 'variant';
+      const type = this.seriesData && this.seriesData.templateType;
+      return type === 'rug' || type === 'wallcovering';
     },
 
-    // 基础信息获取
+    // 主图列表（来自 mainImages）
+    gallery() {
+      return this.product ? this.product.mainImages.map(img => img.src) : [];
+    },
+    // 副图列表（来自 assistantImages）
+    appImages() {
+      return this.product ? this.product.assistantImages.map(img => img.src) : [];
+    },
+    variantItems() {
+      return this.product
+        ? this.product.assistantImages.map(img => ({ image: img.src, name: img.name }))
+        : [];
+    },
+
+    // 基础信息
     currentSeriesName() {
-      return this.seriesData ? this.seriesData[this.locale].seriesName : '';
+      return this.seriesData ? (this.seriesData[this.locale].name || '') : '';
     },
     productTitle() {
-      return this.product ? this.product[this.locale].title : '';
+      return this.product ? (this.product[this.locale].name || '') : '';
     },
     productDesc() {
-      return this.product ? this.product[this.locale].desc : '';
+      return this.product ? (this.product[this.locale].desc || '') : '';
     },
 
     // Variant 逻辑
     selectedVariantImage() {
-      if (!this.product || !this.product.variants.length) return '';
-      return this.product.variants[this.currentVariantIndex].image;
+      if (!this.variantItems.length) return '';
+      return this.variantItems[this.currentVariantIndex].image;
     },
     selectedVariantName() {
-      if (!this.product || !this.product.variants.length) return '';
-      return this.product.variants[this.currentVariantIndex].name;
+      if (!this.variantItems.length) return '';
+      return this.variantItems[this.currentVariantIndex].name;
     },
 
-    // --- 轮播逻辑构建 ---
-
-    // 1. Hero 轮播列表构造: [Last, ...All, First]
+    // Hero 轮播: [Last, ...All, First]
     heroLoopList() {
-      if (!this.product || !this.product.gallery) return [];
-      const list = this.product.gallery;
-      return [list[list.length-1], ...list, list[0]];
+      if (!this.gallery.length) return [];
+      return [this.gallery[this.gallery.length - 1], ...this.gallery, this.gallery[0]];
     },
     heroTrackStyle() {
       return {
@@ -214,11 +233,10 @@ export default {
       };
     },
 
-    // 2. App 轮播列表构造: 同上
+    // App 轮播
     appLoopList() {
-      if (!this.product || !this.product.applications) return [];
-      const list = this.product.applications;
-      return [list[list.length-1], ...list, list[0]];
+      if (!this.appImages.length) return [];
+      return [this.appImages[this.appImages.length - 1], ...this.appImages, this.appImages[0]];
     },
     appTrackStyle() {
       return {
@@ -227,12 +245,12 @@ export default {
       };
     },
 
-    // 3. 底部轮播列表构造: [CloneEnd(3), ...Real(5), CloneStart(3)]
+    // 底部推荐轮播
     bottomDisplayList() {
       if (!this.bottomItemsRaw.length) return [];
       const list = this.bottomItemsRaw;
-      const cloneEnd = list.slice(0, this.itemsPerSlide); // 头部3个放到尾部
-      const cloneStart = list.slice(-this.itemsPerSlide); // 尾部3个放到头部
+      const cloneEnd = list.slice(0, this.itemsPerSlide);
+      const cloneStart = list.slice(-this.itemsPerSlide);
       return [...cloneStart, ...list, ...cloneEnd];
     },
     bottomTrackStyle() {
@@ -261,40 +279,65 @@ export default {
     this.pauseAutoPlay();
   },
   methods: {
-    loadData() {
-      const { seriesId, itemId } = this.props || this.$route.params;
-      this.seriesData = productsData.find(s => s.id === seriesId);
-      
-      if (this.seriesData) {
-        this.product = this.seriesData.items.find(i => i.id === itemId);
-        console.log(this.product,"aaa");
-        
-        // 准备底部推荐数据：同系列随机5个
-        const others = this.seriesData.items.filter(i => i.id !== itemId);
-        // 简单洗牌
-        this.bottomItemsRaw = others.sort(() => 0.5 - Math.random()).slice(0, 5);
+    async loadData() {
+      const { seriesId, itemId } = this.$route.params;
+      if (!itemId || !seriesId) return;
+
+      this.loading = true;
+      this.error = null;
+      this.product = null;
+      this.seriesData = null;
+      this.bottomItemsRaw = [];
+
+      try {
+        const [product, series] = await Promise.all([
+          fetchProductById(itemId),
+          fetchProductSeriesById(seriesId),
+        ]);
+        this.product = product;
+        this.seriesData = series;
+
+        const allProducts = await fetchProductsBySeriesId(seriesId);
+        const others = allProducts.filter(p => String(p.id) !== String(itemId));
+        this.bottomItemsRaw = others
+          .sort(() => 0.5 - Math.random())
+          .slice(0, 5)
+          .map(p => ({
+            id: p.id,
+            image: p.coverImage,
+            zh: { title: p.zh.name },
+            en: { title: p.en.name },
+          }));
+      } catch (err) {
+        this.error = err.message;
+        console.error('[ProductDetail] 获取数据失败:', err);
+      } finally {
+        this.loading = false;
       }
-      
-      // 重置轮播状态
+
       this.heroIndex = 1;
       this.appIndex = 1;
-      this.bottomIndex = 3; // 对应 itemsPerSlide
+      this.currentVariantIndex = 0;
+      this.bottomIndex = this.itemsPerSlide;
       window.scrollTo(0, 0);
     },
 
     getSpec(key) {
-      if (!this.product || !this.product.specs) return '-';
-      // 0: zh, 1: en
-      const idx = this.locale === 'zh' ? 0 : 1;
-      return this.product.specs[key][idx] || '-';
+      if (!this.product) return '-';
+      const lang = this.product[this.locale] || {};
+      const map = {
+        category: lang.type,
+        composition: lang.composition,
+        description: lang.desc,
+        dimensions: lang.dimensions,
+        patternRepeat: lang.patternRepeat,
+      };
+      return map[key] || '-';
     },
     getLocaleText(item, key) {
       return item[this.locale][key];
     },
 
-    // --- 通用轮播逻辑 (Manual) ---
-    // type: 'hero' | 'app'
-    // direction: -1 | 1
     moveSlide(type, direction, maxRealCount) {
       const isAnimatingKey = `is${type}Animating`;
       const isResettingKey = `is${type}Resetting`;
@@ -304,76 +347,44 @@ export default {
       this[isAnimatingKey] = true;
       this[indexKey] += direction;
 
-      // 动画结束后检查边界
       setTimeout(() => {
         const currentIdx = this[indexKey];
-        // 这里的边界是：0 (cloneLast) 和 maxRealCount + 1 (cloneFirst)
-        
         if (currentIdx === 0) {
-          // 跳到真实最后一张 (index = maxRealCount)
           this[isResettingKey] = true;
           this[indexKey] = maxRealCount;
           setTimeout(() => this[isResettingKey] = false, 50);
         } else if (currentIdx === maxRealCount + 1) {
-          // 跳到真实第一张 (index = 1)
           this[isResettingKey] = true;
           this[indexKey] = 1;
           setTimeout(() => this[isResettingKey] = false, 50);
         }
-        
         this[isAnimatingKey] = false;
-      }, type === 'App' ? 600 : 500); // App 动画稍慢
+      }, type === 'App' ? 600 : 500);
     },
 
     moveHero(dir) {
-      const count = this.product.gallery.length;
-      this.moveSlide('Hero', dir, count);
+      this.moveSlide('Hero', dir, this.gallery.length);
     },
     moveApp(dir) {
-      const count = this.product.applications.length;
-      this.moveSlide('App', dir, count);
+      this.moveSlide('App', dir, this.appImages.length);
     },
 
-    // --- 底部轮播逻辑 (Multiple Items) ---
     moveBottom(dir) {
       if (this.isBottomAnimating) return;
       this.isBottomAnimating = true;
       this.bottomIndex += dir;
 
       const realCount = this.bottomItemsRaw.length;
-      
       setTimeout(() => {
-        // 边界处理
-        // 结构: [CloneStart(3), Real(5), CloneEnd(3)]
-        // RealFirst index = 3. RealLast index = 3 + 5 - 1 = 7.
-        // Left Limit: index = 0 (CloneStart[0]) -> Jump to RealLast (7) ? 
-        // 实际上 0 显示的是 CloneStart[0] (即 RealLast)。所以我们要跳到 RealLast 的位置。
-        // RealLast 的位置索引 = itemsPerSlide + realCount - 1? 
-        // 让我们重新梳理:
-        // List: [8,9,10(CloneEnd), 1,2,3,4,5(Real), 1,2,3(CloneStart)] -> 不对
-        // Correct List Logic in Computed: [...CloneStart(Tail), ...Real, ...CloneEnd(Head)]
-        // List: [3,4,5, 1,2,3,4,5, 1,2,3] (assuming 5 items, 3 per slide)
-        // Indices: 0,1,2 | 3,4,5,6,7 | 8,9,10
-        // Real Range: 3 to 7.
-        
-        // Case: Click Prev from 3 -> 2. 2 is CloneStart[last] aka Real[last] aka 5.
-        // We want to jump to Real[last] position which is 7.
-        // So if index < 3, jump to index + realCount. (2 -> 7)
-        
-        // Case: Click Next from 7 -> 8. 8 is CloneEnd[0] aka Real[0] aka 1.
-        // We want to jump to Real[0] position which is 3.
-        // So if index >= 3 + realCount, jump to index - realCount. (8 -> 3)
-
         if (this.bottomIndex < this.itemsPerSlide) {
-            this.isBottomResetting = true;
-            this.bottomIndex += realCount;
-            setTimeout(() => this.isBottomResetting = false, 50);
+          this.isBottomResetting = true;
+          this.bottomIndex += realCount;
+          setTimeout(() => this.isBottomResetting = false, 50);
         } else if (this.bottomIndex >= this.itemsPerSlide + realCount) {
-            this.isBottomResetting = true;
-            this.bottomIndex -= realCount;
-            setTimeout(() => this.isBottomResetting = false, 50);
+          this.isBottomResetting = true;
+          this.bottomIndex -= realCount;
+          setTimeout(() => this.isBottomResetting = false, 50);
         }
-        
         this.isBottomAnimating = false;
       }, 600);
     },
@@ -389,13 +400,10 @@ export default {
       this.itemsPerSlide = window.innerWidth < 768 ? 1 : 3;
     },
     goToDetail(itemId) {
-      // 切换同系列不同产品
       this.$router.push({
         name: 'ProductDetail',
-        params: { seriesId: this.seriesData.id, itemId }
+        params: { seriesId: String(this.seriesData.id), itemId: String(itemId) }
       });
-      // 强制刷新数据 (虽然 watch 会处理，但为了保险)
-      // window.location.reload() 不推荐，依赖 watch 即可
     }
   }
 };
@@ -408,6 +416,17 @@ export default {
   padding-top: 100px;
   background: #fff;
   color: #333;
+}
+
+.loading-state,
+.error-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 100px);
+  font-size: 14px;
+  color: #999;
+  letter-spacing: 1px;
 }
 
 // 导航栏复用样式

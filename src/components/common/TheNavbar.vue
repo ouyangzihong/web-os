@@ -47,8 +47,7 @@
 
 <script>
 import gsap from 'gsap';
-// [新增] 引入产品数据
-import { productsData } from '@/data/products.js';
+import { fetchProductSeries } from '@/api/products';
 
 export default {
   name: 'TheNavbar',
@@ -58,7 +57,7 @@ export default {
   data() {
     return {
       isScrolled: false,
-      productSeries: productsData, // [新增] 绑定数据
+      productSeries: [],
       menuKeys: [
         { key: 'home', path: '/' },
         { key: 'about', path: '/about' },
@@ -73,9 +72,15 @@ export default {
     currentLangLabel() {
       return this.$i18n.locale === 'en' ? 'EN' : 'CN';
     },
-    // [新增] 便捷获取当前语言
     locale() {
       return this.$i18n.locale;
+    }
+  },
+  async created() {
+    try {
+      this.productSeries = await fetchProductSeries();
+    } catch (err) {
+      console.error('[Navbar] 获取产品系列失败:', err);
     }
   },
   mounted() {
@@ -106,13 +111,13 @@ export default {
         }
       });
     },
-    // [新增] 跳转到系列详情页
     goToSeries(id) {
-      this.$router.push({ name: 'SeriesDetail', params: { id } });
+      this.$router.push({ name: 'SeriesDetail', params: { id: String(id) } }).catch(err => {
+        if (err.name !== 'NavigationDuplicated') console.error(err);
+      });
     },
-    // [新增] 获取对应语言的系列名称
     getSeriesName(series) {
-      return series[this.locale].seriesName;
+      return series[this.locale].name;
     },
     hoverItem() {},
     resetItem() {}

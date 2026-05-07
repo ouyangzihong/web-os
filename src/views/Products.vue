@@ -3,8 +3,9 @@
     <TheNavbar :is-visible="true" class="force-light-nav" />
 
     <div class="main-container">
-
-      <div class="products-grid">
+      <div v-if="loading" class="loading-state">Loading...</div>
+      <div v-else-if="error" class="error-state">{{ error }}</div>
+      <div v-else class="products-grid">
         <div 
           v-for="(item, index) in products" 
           :key="item.id" 
@@ -22,12 +23,6 @@
 
           <div class="text-box">
             <h2 class="card-title">{{ item.title }}</h2>
-            <!-- <p class="card-desc">{{ item.desc }}</p>
-            <div class="card-meta">
-              <span>{{ item.location }}</span>
-              <span class="divider">|</span>
-              <span>{{ item.type }}</span>
-            </div> -->
           </div>
         </div>
       </div>
@@ -40,39 +35,56 @@
 <script>
 import TheNavbar from '@/components/common/TheNavbar.vue';
 import TheFooter from '@/components/common/TheFooter.vue';
-import { productsData } from '@/data/products.js';
+import { fetchProductSeries } from '@/api/products';
 import gsap from 'gsap';
 
 export default {
   name: 'ProductsView',
   components: { TheNavbar, TheFooter },
+  data() {
+    return {
+      seriesList: [],
+      loading: false,
+      error: null,
+    };
+  },
   computed: {
     products() {
       const locale = this.$i18n.locale;
-      return productsData.map(item => ({
+      return this.seriesList.map(item => ({
         id: item.id,
         coverImage: item.coverImage,
-        ...item[locale]
+        title: item[locale].name,
       }));
+    }
+  },
+  watch: {
+    products(val) {
+      if (val.length > 0) {
+        this.$nextTick(() => {
+          gsap.from('.product-card', {
+            y: 50, opacity: 0, duration: 0.8, stagger: 0.1, ease: 'power2.out'
+          });
+        });
+      }
     }
   },
   methods: {
     handleCardClick(id) {
-        // [修改] 跳转到 SeriesDetail 页面，并传递 id
-        this.$router.push({ 
-        name: 'SeriesDetail', 
-        params: { id: id } 
-        });
+      this.$router.push({ name: 'SeriesDetail', params: { id: String(id) } });
     }
   },
-  mounted() {
-    const tl = gsap.timeline();
-    tl.from(this.$refs.header, {
-      y: 30, opacity: 0, duration: 0.8, ease: 'power2.out'
-    })
-    .from(this.$refs.productCards, {
-      y: 50, opacity: 0, duration: 0.8, stagger: 0.1, ease: 'power2.out'
-    }, "-=0.4");
+  async created() {
+    this.loading = true;
+    this.error = null;
+    try {
+      this.seriesList = await fetchProductSeries();
+    } catch (err) {
+      this.error = err.message;
+      console.error('[Products] 获取产品系列失败:', err);
+    } finally {
+      this.loading = false;
+    }
   }
 };
 </script>
@@ -97,6 +109,17 @@ export default {
   @media screen and (max-width: 768px) {
     padding: 15px 20px !important;
   }
+}
+
+.loading-state,
+.error-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 100px);
+  font-size: 14px;
+  color: #999;
+  letter-spacing: 1px;
 }
 
 .main-container {

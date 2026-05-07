@@ -2,12 +2,9 @@
   <div class="series-detail-page">
     <TheNavbar :is-visible="true" class="force-light-nav" />
 
-    <div class="main-content" v-if="currentSeries">
-      <!-- <div class="page-header">
-        <h1>{{ currentSeries.seriesName }}</h1>
-        <p class="subtitle">{{ currentSeries.title }}</p>
-      </div> -->
-
+    <div v-if="loading" class="loading-state">Loading...</div>
+    <div v-else-if="error" class="error-state">{{ error }}</div>
+    <div v-else-if="currentSeries" class="main-content">
       <div class="items-grid">
         <div 
           v-for="item in seriesItems" 
@@ -24,11 +21,6 @@
 
           <div class="info-wrapper">
             <h3 class="item-title">{{ item.title }}</h3>
-            <!-- <div class="item-meta">
-              <span>{{ item.location }}</span>
-              <span class="divider">|</span>
-              <span>{{ item.type }}</span>
-            </div> -->
           </div>
         </div>
       </div>
@@ -45,63 +37,92 @@
 <script>
 import TheNavbar from '@/components/common/TheNavbar.vue';
 import TheFooter from '@/components/common/TheFooter.vue';
-import { productsData } from '@/data/products.js';
+import { fetchProductSeriesById, fetchProductsBySeriesId } from '@/api/products';
 import gsap from 'gsap';
 
 export default {
   name: 'SeriesDetail',
   components: { TheNavbar, TheFooter },
-  props: ['id'], // 接收路由参数 id
+  props: ['id'],
+  data() {
+    return {
+      seriesInfo: null,
+      productList: [],
+      loading: false,
+      error: null,
+    };
+  },
   computed: {
-    // 获取当前系列的数据
     currentSeries() {
-      const series = productsData.find(p => p.id === this.id);
-      if (!series) return null;
-      
-      const locale = this.$i18n.locale;
-      return {
-        ...series[locale], // 获取当前语言的标题等
-        originalItems: series.items || [] // 获取原始 items 数据
-      };
+      return this.seriesInfo;
     },
-    // 处理列表数据的多语言
     seriesItems() {
-      if (!this.currentSeries) return [];
+      if (!this.productList.length) return [];
       const locale = this.$i18n.locale;
-      
-      return this.currentSeries.originalItems.map(item => ({
+      return this.productList.map(item => ({
         id: item.id,
-        image: item.image,
-        ...item[locale] // 展开 zh 或 en 数据
+        image: item.coverImage,
+        title: item[locale].name,
+        location: item[locale].location,
+        type: item[locale].type,
       }));
+    }
+  },
+  watch: {
+    // 路由参数变化时重新加载（同组件复用场景）
+    '$route.params.id': {
+      handler(newId) {
+        if (newId) this.loadData(newId);
+      }
+    },
+    seriesItems(val) {
+      if (val.length > 0) {
+        this.$nextTick(() => {
+          gsap.from('.item-card', {
+            y: 40,
+            opacity: 0,
+            duration: 0.6,
+            stagger: 0.1,
+            ease: 'power2.out',
+            delay: 0.2,
+          });
+        });
+      }
     }
   },
   methods: {
     openItemDetail(item) {
-      console.log('Open detail for:', item.title);
-        // [修改] 跳转到 ProductDetail，传递 seriesId 和 itemId
-        // 注意：item.id 格式目前是 "series-a-1"，我们将其作为 itemId
-        this.$router.push({ 
-        name: 'ProductDetail', 
-        params: { 
-            seriesId: this.id, // 当前页面的系列ID (props)
-            itemId: item.id 
-        } 
-        });
+      this.$router.push({
+        name: 'ProductDetail',
+        params: {
+          seriesId: String(this.id),
+          itemId: String(item.id),
+        }
+      });
+    },
+    async loadData(id) {
+      this.loading = true;
+      this.error = null;
+      this.seriesInfo = null;
+      this.productList = [];
+      try {
+        const [series, products] = await Promise.all([
+          fetchProductSeriesById(id),
+          fetchProductsBySeriesId(id),
+        ]);
+        this.seriesInfo = series;
+        this.productList = products;
+      } catch (err) {
+        this.error = err.message;
+        console.error('[SeriesDetail] 获取数据失败:', err);
+      } finally {
+        this.loading = false;
+      }
+      window.scrollTo(0, 0);
     }
   },
-  mounted() {
-    // 简单的入场动画
-    if (this.currentSeries) {
-      gsap.from('.item-card', {
-        y: 40,
-        opacity: 0,
-        duration: 0.6,
-        stagger: 0.1,
-        ease: 'power2.out',
-        delay: 0.2
-      });
-    }
+  created() {
+    this.loadData(this.id);
   }
 };
 </script>
@@ -128,8 +149,19 @@ export default {
   }
 }
 
+.loading-state,
+.error-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 100px);
+  font-size: 14px;
+  color: #999;
+  letter-spacing: 1px;
+}
+
 .main-content {
-  max-width: 1600px; // 宽屏设计
+  max-width: 1600px;
   margin: 0 auto;
   padding: 40px 100px 120px;
 }
