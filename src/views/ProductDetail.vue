@@ -64,7 +64,7 @@
             <div class="slide-item app-slide"><img :src="appLoopList[0]" /></div>
             <div class="slide-item app-slide" v-for="(img, i) in appImages" :key="`app-${i}`">
               <img :src="img" />
-              <div class="app-caption">Product images can be illustration references</div>
+              <!-- <div class="app-caption">Product images can be illustration references</div> -->
             </div>
             <div class="slide-item app-slide"><img :src="appLoopList[appLoopList.length-1]" /></div>
           </div>
