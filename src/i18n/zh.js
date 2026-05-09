@@ -89,9 +89,9 @@ export default {
     subTitle: '常见问题',
     title: '有疑问？\n请随时联系！',
     description: '我们要随时为您提供帮助，解答您的任何疑问或顾虑。请随时与我们联系。',
-    location: '中国 —',
-    email: 'XXXXXX@XXX.com',
-    phone: '+86 000 0000 0000',
+    location: '广东省佛山市金海创意中心 1202 室',
+    email: 'cyc183545@gmail.com',
+    phone: '+86 132 4621 0619',
     form: {
       name: '姓名',
       email: '邮箱',

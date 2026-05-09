@@ -572,12 +572,12 @@ export default {
   .app-slider {
     width: 100%;
     position: relative;
-    padding: 0 200px; // [新增] 左右留出间距 (数值可按需调整，如 24px 或 60px)
+    padding: 0 300px; // [新增] 左右留出间距 (数值可按需调整，如 24px 或 60px)
 
     .slider-window {
       width: 100%;
       height: auto;      // [修改] 移除固定高度 60vh
-      aspect-ratio: 2/1; // [新增] 锁定长宽比为 2:1
+      aspect-ratio: 4/3; // [新增] 锁定长宽比为 4:3
       overflow: hidden;
       position: relative;
       background-color: #f4f4f4;
@@ -711,7 +711,7 @@ export default {
     padding: 20px;
     gap: 30px;
     
-    .hero-slider .slider-window { aspect-ratio: 1; }
+    .hero-slider .slider-window { aspect-ratio: 4/3; }
   }
   
   .section-container { padding: 40px 20px; }
@@ -728,7 +728,7 @@ export default {
     
     .slider-window { 
       height: auto; 
-      aspect-ratio: 3/2; 
+      aspect-ratio: 4/3; 
     }
   }
 }

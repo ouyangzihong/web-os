@@ -89,9 +89,9 @@ export default {
     subTitle: 'Common questions',
     title: 'Have questions?\nGet in touch!',
     description: 'We are here to assist you with any questions or concerns you may have. Feel free to reach out to us anytime.',
-    location: 'China—',
-    email: 'XXXXXX@XXX.com',
-    phone: '+86 000 0000 0000',
+    location: 'Room 1202, Jinhai Creative Center, Foshan, Guangdong, China',
+    email: 'cyc183545@gmail.com',
+    phone: '+86 132 4621 0619',
     form: {
       name: 'Name',
       email: 'Email',
